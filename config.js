@@ -1,10 +1,10 @@
 // Regular expressions need to be stored as strings, not the /exp/ notation
 
 var defaultConfig = {
-    immunePrefixes: [
-        "view-source:/",
-        "chrome://",
-        "chrome-extension://"
+    ignorePatterns: [
+        "^view-source:/",
+        "^chrome://",
+        "^chrome-extension://"
     ],
     urlPatterns: [
         "^https://drive.google.com/(corp/)?drive/(u/[0-9]/)?",

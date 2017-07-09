@@ -5,7 +5,7 @@ var globalCount = 0;
 var globalConfig;
 
 function onCompleted(details) {
-    if (details.frameId != 0 || isUrlEmpty(details.url) || isUrlImmune(details.url)) {
+    if (details.frameId != 0 || !url || isIgnoredUrl(details.url)) {
         return;
     }
     console.log("looking for and removing duplicate tabs of %s %s", details.tabId, details.url);
@@ -131,28 +131,14 @@ function getUrlForComparison(url) {
 //    console.log("getUrlForComparison(%s) -> %s", url, urlForComparison);
     return urlForComparison;
 }
-function isUrlImmune(url) {
-    var i;
-    var immune = false;
-    for (i = 0 ; i < globalConfig.immunePrefixes ; i++) {
-        if (url.startsWith(globalConfig.immunePrefixes[i])) {
-            immune = true;
-            break;
-        }
-    }
-//    console.log("isUrlImmune(%s) -> %s", url, immune);
-    return immune;
-}
-
-function isUrlEmpty(url) {
-    var empty = !url || url == '';
-//    console.log("isUrlEmpty(%s) -> %s", url, empty);
+function isIgnoredUrl(url) {
+    return !!globalConfig.ignorePatterns.find(function(re) { return re.test(url)});
 }
 
 configLoad(function(loadedConfig){
-    loadedConfig.urlPatterns = loadedConfig.urlPatterns.map(function(pattern) {
-        return new RegExp(pattern);
-    })
+    var f = function(s) { return new RegExp(s)}
+    loadedConfig.urlPatterns = loadedConfig.urlPatterns.map(f)
+    loadedConfig.ignorePatterns = loadedConfig.ignorePatterns.map(f)
     globalConfig = loadedConfig;
 });
 
