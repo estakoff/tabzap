@@ -15,6 +15,9 @@ var defaultConfig = {
     ]
 }
 
+function configGetEmpty() {
+    return { ignorePatterns: [], urlPatterns: []};
+}
 function configGetDefaults() {
     return JSON.parse(JSON.stringify(defaultConfig));
 }

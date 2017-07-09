@@ -5,7 +5,7 @@ var globalCount = 0;
 var globalConfig;
 
 function onCompleted(details) {
-    if (details.frameId != 0 || !url || isIgnoredUrl(details.url)) {
+    if (details.frameId != 0 || !details.url || isIgnoredUrl(details.url)) {
         return;
     }
     console.log("looking for and removing duplicate tabs of %s %s", details.tabId, details.url);
