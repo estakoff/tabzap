@@ -1,5 +1,5 @@
 var globalTimer;
-var globalQueue = [];
+var globalQueue = new Set();
 var globalCount = 0;
 
 function onCompleted(details) {
@@ -52,19 +52,29 @@ function clearBadge() {
 }
 
 function setBadge(count) {
-    chrome.browserAction.setBadgeText({text: count.toString()})    
+    var textCount = count.toString();
+    if (count == 0) {
+        textCount = "";
+    }
+    chrome.browserAction.setBadgeText({text: textCount})    
+}
+
+function updateBadge() {
+    if (globalQueue.size > 0) {
+        chrome.browserAction.setBadgeText({text: globalQueue.size.toString()})
+    }
+    else {
+        chrome.browserAction.setBadgeText({text: ""})
+    }
 }
 function removeTabs(tabs) {
-    if (tabs.length) {
-        setBadge(tabs.length)
-    }
-    
     var tabIds = tabs.map(function(tab) { return tab.id});
 
-    globalQueue.push(tabIds);
+    tabs.forEach(function(tab) {
+        globalQueue.add(tab.id)
+    })
 
-    globalCount += tabIds.length;
-    setBadge(globalCount);
+    updateBadge();
 
     // If a timer is already pending, clear it and start the count again.
     // As long as the user keeps creating tabs we'll defer closing existing ones.
@@ -76,11 +86,11 @@ function removeTabs(tabs) {
 }
 
 function processGlobalQueue() {
-    globalCount = 0;
-    clearBadge();
-    while (globalQueue.length > 0) {
-        chrome.tabs.remove(globalQueue.pop());
-    }
+    globalQueue.forEach(function(tabId) {
+        chrome.tabs.remove(tabId);
+        globalQueue.delete(tabId);
+        updateBadge();
+    })
 }
 function showNotification(tabs, timer) {
     options = {
@@ -108,6 +118,7 @@ var builtinUrlPatterns = [
     /^https:\/\/drive.google.com\/(corp\/)?drive\/(u\/[0-9]\/)?/,
     /^https:\/\/keep.google.com\//,
     /^https:\/\/docs.google.com\/([a-z]*\/)?d\/[^\/]+\/?/,
+    /^https:\/\/www.reddit.com\/\?count=/,
     /^[^#]*/
 ]
 function getUrlForComparison(url) {
