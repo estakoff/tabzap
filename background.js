@@ -2,6 +2,8 @@ var globalTimer;
 var globalQueue = new Set();
 var globalCount = 0;
 
+var globalConfig;
+
 function onCompleted(details) {
     if (details.frameId != 0 || isUrlEmpty(details.url) || isUrlImmune(details.url)) {
         return;
@@ -114,18 +116,11 @@ function showNotification(tabs, timer) {
         })
     });
 }
-var builtinUrlPatterns = [
-    /^https:\/\/drive.google.com\/(corp\/)?drive\/(u\/[0-9]\/)?/,
-    /^https:\/\/keep.google.com\//,
-    /^https:\/\/docs.google.com\/([a-z]*\/)?d\/[^\/]+\/?/,
-    /^https:\/\/www.reddit.com\/\?count=/,
-    /^[^#]*/
-]
 function getUrlForComparison(url) {
     var i;
     var urlForComparison = url;
-    for (i = 0 ; i < builtinUrlPatterns.length ; i++) {
-        match = url.match(builtinUrlPatterns[i]);
+    for (i = 0 ; i < globalConfig.urlPatterns.length ; i++) {
+        match = url.match(globalConfig.urlPatterns[i]);
 
         if (match) {
             urlForComparison = match[0];
@@ -136,16 +131,11 @@ function getUrlForComparison(url) {
 //    console.log("getUrlForComparison(%s) -> %s", url, urlForComparison);
     return urlForComparison;
 }
-var builtInImmunePrefixes = [
-    "view-source:/",
-    "chrome://",
-    "chrome-extension://"
-]
 function isUrlImmune(url) {
     var i;
     var immune = false;
-    for (i = 0 ; i < builtInImmunePrefixes ; i++) {
-        if (url.startsWith(builtInImmunePrefixes[i])) {
+    for (i = 0 ; i < globalConfig.immunePrefixes ; i++) {
+        if (url.startsWith(globalConfig.immunePrefixes[i])) {
             immune = true;
             break;
         }
@@ -158,6 +148,13 @@ function isUrlEmpty(url) {
     var empty = !url || url == '';
 //    console.log("isUrlEmpty(%s) -> %s", url, empty);
 }
+
+configLoad(function(loadedConfig){
+    loadedConfig.urlPatterns = loadedConfig.urlPatterns.map(function(pattern) {
+        return new RegExp(pattern);
+    })
+    globalConfig = loadedConfig;
+});
 
 chrome.webNavigation.onCompleted.addListener(onCompleted);
 chrome.browserAction.onClicked.addListener(onClicked);
