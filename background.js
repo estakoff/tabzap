@@ -135,12 +135,15 @@ function isIgnoredUrl(url) {
     return !!globalConfig.ignorePatterns.find(function(re) { return re.test(url)});
 }
 
-configLoad(function(loadedConfig){
-    var f = function(s) { return new RegExp(s)}
-    loadedConfig.urlPatterns = loadedConfig.urlPatterns.map(f)
-    loadedConfig.ignorePatterns = loadedConfig.ignorePatterns.map(f)
-    globalConfig = loadedConfig;
-});
 
+function onStorageChanged() {
+    configLoad(function(loadedConfig){
+        var f = function(s) { return new RegExp(s)}
+        loadedConfig.urlPatterns = loadedConfig.urlPatterns.map(f)
+        loadedConfig.ignorePatterns = loadedConfig.ignorePatterns.map(f)
+        globalConfig = loadedConfig;
+    });
+}
+chrome.storage.onChanged.addListener(onStorageChanged);
 chrome.webNavigation.onCompleted.addListener(onCompleted);
 chrome.browserAction.onClicked.addListener(onClicked);
