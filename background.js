@@ -147,3 +147,4 @@ function onStorageChanged() {
 chrome.storage.onChanged.addListener(onStorageChanged);
 chrome.webNavigation.onCompleted.addListener(onCompleted);
 chrome.browserAction.onClicked.addListener(onClicked);
+onStorageChanged(); // Force the initial load of config
